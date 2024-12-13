@@ -1,69 +1,101 @@
 'use client';
 
 import { useState } from 'react';
-import axios from "axios";
+import { CaptionSection, ImageCreation, UserInput } from "~/features";
+import {ErrorAlert, LoadingSpinner} from "~/components";
 
 type ImageResponse = { url: string };
 type CaptionResponse = { caption: string };
+type ErrorResponse = {
+  error: string;
+};
 
 export default function HomePage() {
-  const [prompt, setPrompt] = useState('');
+  const [prompt, setPrompt] = useState('apple falling from the tree');
   const [image, setImage] = useState<string | null>(null);
-  const [caption, setCaption] = useState<string | null>(null);
+  const [caption, setCaption] = useState<string | null>('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>('');
+
+  const [width, setWidth] = useState(600);
+  const [height, setHeight] = useState(600);
+
+  const clearError = () => setError('');
 
   const generateImage = async () => {
     if (!prompt) return;
 
     setLoading(true);
+    setError('');
     try {
-      const imageResponse = await axios.post<ImageResponse>(
-          '/api/generate-image',
-          { prompt },
-          { headers: { 'Content-Type': 'application/json' } }
-      );
-      setImage(imageResponse.data.url);
+      const [imageRes, captionRes] = await Promise.all([
+        fetch('/api/generate-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          cache: 'no-store',
+          body: JSON.stringify({ prompt, width, height })
+        }),
+        fetch('/api/generate-caption', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          cache: 'no-store',
+          body: JSON.stringify({ prompt })
+        })
+      ]);
 
-      const captionResponse = await axios.post<CaptionResponse>(
-          '/api/generate-caption',
-          { prompt },
-          { headers: { 'Content-Type': 'application/json' } }
-      );
-      setCaption(captionResponse.data.caption);
-    } catch {
+      if (!imageRes.ok) {
+        const { error: imageError } = (await imageRes.json()) as ErrorResponse;
+        setError(imageError ?? 'Failed to generate image');
+        return;
+      }
+      if (!captionRes.ok) {
+        const captionJson = (await captionRes.json()) as ErrorResponse;
+        const captionError = captionJson.error ?? 'Failed to generate caption';
+        setError(captionError);
+        return;
+      }
+
+      const imageData = (await imageRes.json()) as ImageResponse;
+      const captionData = (await captionRes.json()) as CaptionResponse;
+
+      setImage(imageData.url);
+      setCaption(captionData.caption);
+    } catch (error) {
+      console.error(error);
       setImage(null);
-      setCaption(`Failed to generate content`);
+      setCaption('Failed to generate content');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-100">
-        <h1 className="text-3xl font-bold mb-6">Image Generator</h1>
-        <div className="flex items-center space-x-4 mb-6">
-          <input
-              type="text"
-              placeholder="Enter your prompt..."
-              className="px-4 py-2 border rounded-lg w-80"
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-          />
-          <button
-              className="px-4 py-2 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600"
-              onClick={generateImage}
-              disabled={loading}
-          >
-            {loading ? 'Generating...' : 'Run'}
-          </button>
-        </div>
+      <div className="min-h-screen flex flex-col md:flex-row items-start justify-center bg-gray-100 p-4 md:p-8 gap-6">
+        <UserInput
+            prompt={prompt}
+            setPrompt={setPrompt}
+            width={width}
+            setWidth={setWidth}
+            height={height}
+            setHeight={setHeight}
+            loading={loading}
+            onGenerate={generateImage}
+        />
 
-        {image && (
-            <div className="mt-8 text-center">
-              <img src={image} alt="Generated" className="rounded-lg shadow-lg max-w-full h-auto" />
-              <p className="mt-4 text-lg italic text-gray-800">{caption}</p>
-            </div>
-        )}
+        <div className="w-full md:w-2/3 flex flex-col items-center">
+          {error && <ErrorAlert message={error} onClose={clearError} />}
+          {loading && <LoadingSpinner />}
+          {!loading && (
+              <div className="bg-gray-100 p-4 md:p-6 rounded-lg border border-gray-300 shadow-sm w-full">
+                <ImageCreation image={image} width={width} height={height} />
+                {image && (
+                    <div className="mt-4">
+                      <CaptionSection caption={caption} setCaption={setCaption} />
+                    </div>
+                )}
+              </div>
+          )}
+        </div>
       </div>
   );
 }
