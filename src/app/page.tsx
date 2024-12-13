@@ -1,37 +1,69 @@
-import Link from "next/link";
+'use client';
+
+import { useState } from 'react';
+import axios from "axios";
+
+type ImageResponse = { url: string };
+type CaptionResponse = { caption: string };
 
 export default function HomePage() {
+  const [prompt, setPrompt] = useState('');
+  const [image, setImage] = useState<string | null>(null);
+  const [caption, setCaption] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const generateImage = async () => {
+    if (!prompt) return;
+
+    setLoading(true);
+    try {
+      const imageResponse = await axios.post<ImageResponse>(
+          '/api/generate-image',
+          { prompt },
+          { headers: { 'Content-Type': 'application/json' } }
+      );
+      setImage(imageResponse.data.url);
+
+      const captionResponse = await axios.post<CaptionResponse>(
+          '/api/generate-caption',
+          { prompt },
+          { headers: { 'Content-Type': 'application/json' } }
+      );
+      setCaption(captionResponse.data.caption);
+    } catch {
+      setImage(null);
+      setCaption(`Failed to generate content`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-      <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-        <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-          Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
-        </h1>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-          <Link
-            className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
-            href="https://create.t3.gg/en/usage/first-steps"
-            target="_blank"
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-100">
+        <h1 className="text-3xl font-bold mb-6">Image Generator</h1>
+        <div className="flex items-center space-x-4 mb-6">
+          <input
+              type="text"
+              placeholder="Enter your prompt..."
+              className="px-4 py-2 border rounded-lg w-80"
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+          />
+          <button
+              className="px-4 py-2 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600"
+              onClick={generateImage}
+              disabled={loading}
           >
-            <h3 className="text-2xl font-bold">First Steps →</h3>
-            <div className="text-lg">
-              Just the basics - Everything you need to know to set up your
-              database and authentication.
-            </div>
-          </Link>
-          <Link
-            className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
-            href="https://create.t3.gg/en/introduction"
-            target="_blank"
-          >
-            <h3 className="text-2xl font-bold">Documentation →</h3>
-            <div className="text-lg">
-              Learn more about Create T3 App, the libraries it uses, and how to
-              deploy it.
-            </div>
-          </Link>
+            {loading ? 'Generating...' : 'Run'}
+          </button>
         </div>
+
+        {image && (
+            <div className="mt-8 text-center">
+              <img src={image} alt="Generated" className="rounded-lg shadow-lg max-w-full h-auto" />
+              <p className="mt-4 text-lg italic text-gray-800">{caption}</p>
+            </div>
+        )}
       </div>
-    </main>
   );
 }
