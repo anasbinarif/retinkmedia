@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { CaptionSection, ImageCreation, UserInput } from "~/features";
+import {useState} from 'react';
+import {CaptionSection, ImageCreation, UserInput} from "~/features";
 import {ErrorAlert, LoadingSpinner} from "~/components";
 
 type ImageResponse = { url: string };

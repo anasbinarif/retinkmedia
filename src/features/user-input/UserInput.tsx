@@ -1,7 +1,7 @@
 import React from 'react';
 import {type UserInputProps} from "./UserInput.types";
 import TagSelector from "./components/tag-selector/TagSelector";
-import { FiArrowUp } from "react-icons/fi";
+import {FiArrowUp} from "react-icons/fi";
 
 const UserInput: React.FC<UserInputProps> = ({
     prompt,

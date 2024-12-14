@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {FaUserCircle} from "react-icons/fa";
 
 const Navbar: React.FC = () => {
