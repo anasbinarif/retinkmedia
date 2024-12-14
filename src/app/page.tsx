@@ -11,11 +11,12 @@ type ErrorResponse = {
 };
 
 export default function HomePage() {
-  const [prompt, setPrompt] = useState('apple falling from the tree');
+  const [prompt, setPrompt] = useState('');
   const [image, setImage] = useState<string | null>(null);
   const [caption, setCaption] = useState<string | null>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
   const [width, setWidth] = useState(600);
   const [height, setHeight] = useState(600);
@@ -33,13 +34,13 @@ export default function HomePage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           cache: 'no-store',
-          body: JSON.stringify({ prompt, width, height })
+          body: JSON.stringify({ prompt, width, height, tags: selectedTags})
         }),
         fetch('/api/generate-caption', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           cache: 'no-store',
-          body: JSON.stringify({ prompt })
+          body: JSON.stringify({ prompt, tags: selectedTags })
         })
       ]);
 
@@ -80,18 +81,18 @@ export default function HomePage() {
             setHeight={setHeight}
             loading={loading}
             onGenerate={generateImage}
+            selectedTags={selectedTags}
+            setSelectedTags={setSelectedTags}
         />
 
         <div className="w-full md:w-2/3 flex flex-col items-center">
           {error && <ErrorAlert message={error} onClose={clearError} />}
           {loading && <LoadingSpinner />}
           {!loading && (
-              <div className="bg-gray-100 p-4 md:p-6 rounded-lg border border-gray-300 shadow-sm w-full">
+              <div className="bg-gray-100 flex justify-between p-4 md:p-6 rounded-lg border border-gray-300 shadow-sm w-full">
                 <ImageCreation image={image} width={width} height={height} />
                 {image && (
-                    <div className="mt-4">
                       <CaptionSection caption={caption} setCaption={setCaption} />
-                    </div>
                 )}
               </div>
           )}

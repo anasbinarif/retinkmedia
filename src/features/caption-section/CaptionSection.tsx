@@ -13,7 +13,7 @@ const CaptionSection: React.FC<CaptionSectionProps> = ({ caption, setCaption }) 
             <label className="block mb-2 font-semibold">Caption</label>
             <textarea
                 className="w-full border rounded-lg p-2"
-                rows={3}
+                rows={15}
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
             />

@@ -1,5 +1,7 @@
 import React from 'react';
-import { type UserInputProps } from "./UserInput.types";
+import {type UserInputProps} from "./UserInput.types";
+import TagSelector from "./components/tag-selector/TagSelector";
+import { FiArrowUp } from "react-icons/fi";
 
 const UserInput: React.FC<UserInputProps> = ({
     prompt,
@@ -10,21 +12,28 @@ const UserInput: React.FC<UserInputProps> = ({
     setHeight,
     loading,
     onGenerate,
+    selectedTags,
+    setSelectedTags
 }) => {
     return (
-        <div className="w-full md:w-1/3 md:pr-8 md:sticky md:top-18 self-start">
-            <div className="flex flex-col space-y-6 bg-gray-100 p-4 md:p-6 rounded-lg border border-gray-300 shadow-sm">
+        <div className="w-full md:w-1/3 md:pr-8 md:sticky md:top-18 self-start h-[550px] flex flex-col relative">
+            <div
+                className="flex-grow overflow-y-auto space-y-6 bg-gray-100 p-4 md:p-6 rounded-lg border border-gray-300 shadow-sm">
                 <h1 className="text-2xl md:text-3xl font-bold mb-4">Image Generator</h1>
 
                 <div className="flex flex-col space-y-2">
                     <label className="font-semibold">Prompt</label>
-                    <input
-                        type="text"
+                    <textarea
                         placeholder="Enter your prompt..."
-                        className="px-4 py-2 border rounded-lg w-full"
+                        className="px-4 py-2 border rounded-lg w-full resize-none h-24"
                         value={prompt}
                         onChange={(e) => setPrompt(e.target.value)}
                     />
+                </div>
+
+                <div className="flex flex-col space-y-2">
+                    <label className="font-semibold">Tags</label>
+                    <TagSelector selectedTags={selectedTags} setSelectedTags={setSelectedTags}/>
                 </div>
 
                 <div className="flex flex-col space-y-2">
@@ -81,11 +90,11 @@ const UserInput: React.FC<UserInputProps> = ({
                 </div>
 
                 <button
-                    className="px-4 py-2 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 w-full mt-4"
+                    className="w-12 h-12 bg-gray-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-blue-600 absolute bottom-4 right-20"
                     onClick={onGenerate}
                     disabled={loading}
                 >
-                    {loading ? 'Generating...' : 'Generate'}
+                    <FiArrowUp className="h-6 w-6"/>
                 </button>
             </div>
         </div>

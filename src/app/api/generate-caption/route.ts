@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 type RequestBody = {
     prompt: string;
     seed?: number;
+    tags?: string[];
 };
 
 export async function POST(req: Request) {
@@ -14,12 +15,12 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
     }
 
-    const { prompt } = body;
+    const { prompt, tags } = body;
     if (!prompt) {
         return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
     }
 
-    const instagramPrompt = `Create a short, catchy Instagram caption (with a friendly tone, emojis, and relevant hashtags) about: ${prompt}`;
+    const instagramPrompt = generateInstagramPrompt(prompt, tags);
 
     try {
         const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(instagramPrompt)}`);
@@ -42,3 +43,13 @@ export async function POST(req: Request) {
             );
     }
 }
+
+const generateInstagramPrompt = (prompt: string, tags?: string[]) => {
+    const tagString = tags && tags.length > 0 ? `Tags: ${tags.join(', ')}` : '';
+    return `
+        Write an engaging and Instagram-ready caption about "${prompt}". 
+        Use an appropriate tone based on the context, include relevant emojis, and add popular hashtags. 
+        Keep the caption concise (under 100 words), and avoid starting the caption with emojis. 
+        ${tagString}
+    `;
+};

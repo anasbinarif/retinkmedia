@@ -4,6 +4,7 @@ type RequestBody = {
     prompt: string;
     width?: number;
     height?: number;
+    tags?: string[];
 };
 
 export async function POST(req: Request) {
@@ -15,13 +16,19 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
     }
 
-    const { prompt, width = 800, height = 600 } = body;
+    const { prompt, width = 800, height = 600, tags } = body;
 
     if (!prompt) {
         return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
     }
 
-    const encodedPrompt = encodeURIComponent(prompt);
+    const tagString = tags && tags.length > 0
+        ? `Consider the following descriptive tags: ${tags.join(", ")}.`
+        : "";
+
+    const promptWithTags = `${prompt}. ${tagString}`.trim();
+
+    const encodedPrompt = encodeURIComponent(promptWithTags);
     const url = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}`;
 
     try {
