@@ -90,11 +90,11 @@ const UserInput: React.FC<UserInputProps> = ({
                 </div>
 
                 <button
-                    className="w-12 h-12 bg-gray-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-blue-600 absolute bottom-4 right-20"
+                    className="w-12 h-12 bg-gray-50 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-blue-200 absolute bottom-4 right-20"
                     onClick={onGenerate}
                     disabled={loading}
                 >
-                    <FiArrowUp className="h-6 w-6"/>
+                    <FiArrowUp className="h-6 w-6 text-black"/>
                 </button>
             </div>
         </div>

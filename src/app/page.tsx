@@ -24,7 +24,10 @@ export default function HomePage() {
   const clearError = () => setError('');
 
   const generateImage = async () => {
-    if (!prompt) return;
+    if (!prompt){
+      setError('Add Prompt please');
+      return
+    }
 
     setLoading(true);
     setError('');
